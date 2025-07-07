@@ -68,6 +68,16 @@ def watchlist():
         # print(harga_vs_ema)
         # print(weekly_valid)
 
+        print(update_fields['ema8'])
+        print(update_fields['ema20'])
+        print(update_fields['ema50'])
+        print(update_fields['rsi'])
+        print(update_fields['volume'])
+        print(update_fields['avg_volume'])
+        print(update_fields['ema8_weekly'])
+        print(update_fields['ema20_weekly'])
+        print(update_fields['rsi_weekly'])
+
         # Update ke DB
         cursor.execute("""
             UPDATE WatchlistPersonal
@@ -88,8 +98,8 @@ def watchlist():
             update_fields['ema20_weekly'],
             update_fields['ema50_weekly'],
             update_fields['rsi_weekly'],
-            status, prio, watchlist_id,
-            trend_pendek, harga_vs_ema, weekly_valid
+            status, prio, trend_pendek, harga_vs_ema, weekly_valid,
+            watchlist_id
         ))
         conn.commit()
 

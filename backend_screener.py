@@ -119,6 +119,59 @@ def calculate_indicators(df):
 # Screening Logic
 # ==========================
 
+def is_bearish_engulfing(df):
+    if df is None or df.empty or len(df) < 2:
+        return False
+
+    df = df.dropna()
+
+    # Ambil dua candle terakhir secara eksplisit
+    prev = df.iloc[-2]
+    curr = df.iloc[-1]
+
+    return (
+        float(prev['Close']) > float(prev['Open']) and  # Hari sebelumnya bullish
+        float(curr['Close']) < float(curr['Open']) and  # Hari ini bearish
+        float(curr['Open']) > float(prev['Close']) and  # Open hari ini lebih tinggi dari close kemarin
+        float(curr['Close']) < float(prev['Open'])      # Close hari ini lebih rendah dari open kemarin
+    )
+
+def is_breaking_10_day_high(df):
+    try:
+        if df is None or df.empty or len(df) < 11:
+            return False
+
+        last_close = df['Close'].iloc[-1]
+        past_10_high = df['High'].iloc[-11:-1].max()
+        return float(last_close) > float(past_10_high)
+    except Exception as e:
+        print(f"[is_breaking_10_day_high] ERROR: {e}")
+        return False
+
+
+
+def is_rsi_dropping(df):
+    if len(df) < 3:
+        return False
+    rsi_today = df['RSI'].iloc[-1]
+    rsi_yesterday = df['RSI'].iloc[-2]
+    return rsi_today < rsi_yesterday
+
+def is_volume_dropping(df):
+    if len(df) < 3:
+        return False
+    vol_today = df['Volume'].iloc[-1]
+    vol_yesterday = df['Volume'].iloc[-2]
+
+    # Pastikan scalar
+    if isinstance(vol_today, pd.Series):
+        vol_today = vol_today.values[0]
+    if isinstance(vol_yesterday, pd.Series):
+        vol_yesterday = vol_yesterday.values[0]
+
+    return vol_today < vol_yesterday
+
+
 def is_valid_breakout(df):
     if len(df) < 12:
         return False
@@ -141,7 +194,6 @@ def is_valid_breakout(df):
     # print('--------------------')
 
     return breakout_range_ok and volume_spike_ok
-
 
 def get_entry_type_status_priority(latest, prev):
     close = float(latest['Close'])
@@ -221,7 +273,7 @@ def run_screener():
     # df_active = pd.read_sql("SELECT ticker FROM ActiveVolumeStocks WHERE active = 1", conn)
     # tickers = [f"{t}.JK" for t in df_active['ticker'].tolist()]
     tickers = get_idx_tickers_from_excel('data/Stock_List.xlsx')
-    # tickers = ['GOTO.JK']
+    # tickers = ['KOIN.JK']
 
     for ticker in tickers:
         df = yf.download(ticker, period='250d', interval='1d')
@@ -247,27 +299,42 @@ def run_screener():
             latest = df.iloc[-1]
             prev = df.iloc[-2]
             
+            print('--------------------')
+            print(ticker.replace(".JK", ""))
+            print('--------------------')
+            
 
             breakout_ok = is_valid_breakout(df)
-            if breakout_ok:
+
+            bearish = is_bearish_engulfing(df)
+            not_breaking_high = not is_breaking_10_day_high(df)
+            rsi_turun = is_rsi_dropping(df)
+            volume_turun = is_volume_dropping(df)
+            print(breakout_ok)
+            print(bearish)
+            print(not_breaking_high)
+            print(volume_turun)
+
+            if breakout_ok and not (bearish or not_breaking_high or rsi_turun or volume_turun):
                 entry_type, status, priority = get_entry_type_status_priority(latest, prev)
             else:
-                entry_type, status, priority = "no", "no", 9
+                entry_type, status, priority = "rejected_filter", "not_recommended", 9
+
 
             ticker_clean = ticker.replace(".JK", "")
 
-            print('--------------------')
-            print(ticker.replace(".JK", ""))
-            print(latest.name.date())
-            print(float(latest['Close']))
-            print(round(float(latest['EMA8']), 2))
-            print(round(float(latest['EMA20']), 2))
-            print(round(float(latest['EMA50']), 2))
-            print(round(float(latest['RSI']), 2))
-            print(int(latest['Volume']))
-            print(int(latest['AvgVolume10']))
-            print(status)
-            print('--------------------')
+            # print('--------------------')
+            # print(ticker.replace(".JK", ""))
+            # print(latest.name.date())
+            # print(float(latest['Close']))
+            # print(round(float(latest['EMA8']), 2))
+            # print(round(float(latest['EMA20']), 2))
+            # print(round(float(latest['EMA50']), 2))
+            # print(round(float(latest['RSI']), 2))
+            # print(int(latest['Volume']))
+            # print(int(latest['AvgVolume10']))
+            # print(status)
+            # print('--------------------')
 
             # exit()
 
