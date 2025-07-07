@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}AI Recommendation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">AI Rekomendasi Saham</h2>
+
+    {% for row in df.itertuples() %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5>{{ row.ticker }} ({{ row.status_rekomendasi }}) — {{ row.tanggal.strftime('%d-%b-%Y') }}</h5>
+            <p>
+                Harga: {{ row.harga }} |
+                EMA8: {{ row.ema8 }} | EMA20: {{ row.ema20 }} | EMA50: {{ row.ema50 }}<br>
+                RSI: {{ row.rsi }} |
+                Volume: {{ "{:,}".format(row.volume) }} |
+                Avg Volume: {{ "{:,}".format(row.avg_volume) }}
+            </p>
+            <p>
+                📊 Weekly: EMA8: {{ row.ema8_weekly }} |
+                EMA20: {{ row.ema20_weekly }} |
+                EMA50: {{ row.ema50_weekly }} |
+                RSI: {{ row.rsi_weekly }}
+            </p>
+
+            {% if row.ticker in existing_ai %}
+                <button class="btn btn-secondary btn-sm" onclick="toggleRecommendation('{{ row.ticker }}')">
+                    Tampilkan Rekomendasi AI
+                </button>
+                <div id="rec-{{ row.ticker }}" class="mt-3" style="display: none;"></div>
+            {% else %}
+                <form method="POST" action="/ai-recommendation" style="display: inline;">
+                    <input type="hidden" name="ticker" value="{{ row.ticker }}">
+                    <button type="submit" class="btn btn-primary btn-sm">Dapatkan Rekomendasi AI</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Modal untuk menampilkan rekomendasi -->
+<div class="modal" tabindex="-1" id="recommendationModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">AI Recommendation</h5>
+        <button type="button" class="btn-close" onclick="closeModal()"></button>
+      </div>
+      <div class="modal-body" id="modalContent">
+        <!-- Isi rekomendasi akan diisi via JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    function toggleRecommendation(ticker) {
+        console.log("Tombol diklik untuk:", ticker);
+        const container = document.getElementById(`rec-${ticker}`);
+        if (container.style.display === "none") {
+            if (!container.dataset.loaded) {
+                fetch(`/ai-recommendation/view?ticker=${ticker}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const html = `
+                            <div class="p-3 border rounded bg-light">
+                                <strong>Ai Recommendation:</strong><br>
+                                <pre style="white-space: pre-wrap; word-break: break-word;">${data.ai}</pre>
+                            </div>
+                        `;
+                        container.innerHTML = html;
+                        container.dataset.loaded = "true";
+                    });
+            }
+            container.style.display = "block";
+        } else {
+            container.style.display = "none";
+        }
+    }
+
+// function showRecommendation(ticker) {
+//     // fetch recommendation from backend
+//     fetch(`/ai-recommendation/view?ticker=${ticker}`)
+//         .then(res => res.json())
+//         .then(data => {
+//             const html = `
+//                 <strong>Versi User:</strong><br>${data.user}<br><br>
+//                 <strong>Versi AI:</strong><br>${data.ai}
+//             `;
+//             document.getElementById("modalContent").innerHTML = html;
+//             document.getElementById("recommendationModal").style.display = "block";
+//         });
+// }
+
+// function closeModal() {
+//     document.getElementById("recommendationModal").style.display = "none";
+// }
+
+// function toggleRecommendation(ticker) {
+//     console.log("Tombol diklik untuk:", ticker); // debug log
+//     const container = document.getElementById(`rec-${ticker}`);
+//     if (container.style.display === "none") {
+//         // fetch jika belum pernah dimuat
+//         if (!container.dataset.loaded) {
+//             fetch(`/ai-recommendation/view?ticker=${ticker}`)
+//                 .then(res => res.json())
+//                 .then(data => {
+//                     const html = `
+//                         <div class="p-3 border rounded bg-light">
+//                             <strong>Versi User:</strong><br>
+//                             <pre>${data.user}</pre>
+//                             <strong>Versi AI:</strong><br>
+//                             <pre>${data.ai}</pre>
+//                         </div>
+//                     `;
+//                     container.innerHTML = html;
+//                     container.dataset.loaded = "true";
+//                 });
+//         }
+//         container.style.display = "block";
+//     } else {
+//         container.style.display = "none";
+//     }
+
+    
+</script>
+{% endblock %}

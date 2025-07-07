@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Watchlist{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Watchlist Personal</h2>
+
+    <div class="mb-5">
+        <h5>Penjelasan Prioritas</h5>
+        <ul>
+            <li><strong>Prioritas 1:</strong> Breakout dengan volume besar, potensi naik cepat (entry agresif).</li>
+            <li><strong>Prioritas 2:</strong> Pullback sehat setelah momentum naik, volume cukup (entry moderat).</li>
+            <li><strong>Prioritas 3–5:</strong> Saham tren naik, tapi kurang validasi (volume kurang, RSI belum tinggi).</li>
+            <li><strong>Prioritas 9:</strong> Tidak layak entry saat ini.</li>
+        </ul>
+    </div>
+
+    {% if message %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+
+    {% for idx, row in df.iterrows() %}
+    <form method="POST" class="border rounded p-3 mb-3 bg-light">
+        <input type="hidden" name="id" value="{{ row['id'] }}">
+        <input type="hidden" name="ticker" value="{{ row['ticker'] }}">
+
+        <div class="row mb-2">
+            <div class="col-md-3"><strong>Tanggal:</strong> {{ row['tanggal'] }}</div>
+            <div class="col-md-3"><strong>Ticker:</strong> {{ row['ticker'] }}</div>
+            <div class="col-md-3"><strong>Status:</strong> {{ row['status_rekomendasi'] }}</div>
+            <div class="col-md-3"><strong>Prioritas:</strong> {{ row['prioritas'] }}</div>
+        </div>
+
+        <div class="row">
+            {% for col in editable_columns %}
+            <div class="col-md-3 mb-2">
+                <label class="form-label small">{{ col }}</label>
+                <input name="{{ col }}" value="{{ row[col] }}" class="form-control form-control-sm">
+            </div>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
+    </form>
+    {% endfor %}
+</div>
+{% endblock %}

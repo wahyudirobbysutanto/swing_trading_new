@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Run Screening{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+<div class="container mt-4">
+    <h2 class="mb-4">Screening Manual</h2>
+
+    {% if message %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+
+    {% if show_button %}
+        <form method="POST" id="screeningForm">
+            <button type="submit" class="btn btn-primary mb-3" id="runBtn">Run Screening</button>
+            <div id="loading" style="display: none;">
+                <span class="spinner-border spinner-border-sm" role="status"></span> Proses screening...
+            </div>
+        </form>
+    {% endif %}
+
+    {% if df is not none %}
+    <div class="table-responsive">
+        <table id="screeningTable" class="table table-bordered table-striped table-sm">
+            <thead>
+                <tr>
+                    {% for col in df.columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in df.itertuples(index=False) %}
+                <tr>
+                    {% for val in row %}
+                    <td>{{ val }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+document.getElementById("screeningForm")?.addEventListener("submit", function () {
+    document.getElementById("runBtn").disabled = true;
+    document.getElementById("loading").style.display = "block";
+});
+
+$(document).ready(function () {
+    $('#screeningTable').DataTable({
+        pageLength: 25,
+        order: [[ {{ df.columns.get_loc('prioritas') if 'prioritas' in df.columns else 0 }}, 'asc' ]],
+        language: {
+            search: "Cari ticker:",
+            lengthMenu: "Tampilkan _MENU_ entri per halaman",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+            zeroRecords: "Tidak ada data ditemukan",
+            paginate: {
+                previous: "Sebelumnya",
+                next: "Berikutnya"
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
+    
+    <h2 class="mb-4">Dashboard Screening Saham</h2>
+
+    <!-- Penjelasan -->
+<div class="mb-5">
+    <h5>Penjelasan Prioritas</h5>
+    <ul>
+        <li><strong>Prioritas 1:</strong> Breakout dengan volume besar, potensi naik cepat (entry agresif).</li>
+        <li><strong>Prioritas 2:</strong> Pullback sehat setelah momentum naik, volume cukup (entry moderat).</li>
+        <li><strong>Prioritas 3–5:</strong> Saham tren naik, tapi kurang validasi (volume kurang, RSI belum tinggi).</li>
+        <li><strong>Prioritas 9:</strong> Tidak layak entry saat ini.</li>
+    </ul>
+</div>
+
+<!-- Charts Row -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="p-3 shadow rounded bg-light">
+            <h6 class="mb-3">Distribusi Prioritas Saham</h6>
+            <canvas id="priorityPieChart" height="300"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6 mb-4">
+        <div class="p-3 shadow rounded bg-light">
+            <h6 class="mb-3">Harga Penutupan Saham Prioritas 1 & 2</h6>
+            <canvas id="closingPriceChart" height="300"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Pie Chart
+    const pieData = {{ prioritas_counts|tojson }};
+    const pieLabels = Object.keys(pieData).map(k => "Prioritas " + k);
+    const pieValues = Object.values(pieData);
+
+    new Chart(document.getElementById('priorityPieChart'), {
+        type: 'pie',
+        data: {
+            labels: pieLabels,
+            datasets: [{
+                data: pieValues,
+                backgroundColor: ['#007bff', '#28a745', '#ffc107', '#fd7e14', '#6c757d', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Bar Chart
+    const priceData = {{ closing_prices|tojson }};
+    const closingChartLabels = Object.keys(priceData);
+    const closingChartValues = Object.values(priceData);
+
+    new Chart(document.getElementById('closingPriceChart'), {
+        type: 'bar',
+        data: {
+            labels: closingChartLabels,
+            datasets: [{
+                label: 'Harga Penutupan',
+                data: closingChartValues,
+                backgroundColor: '#17a2b8'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
+{% endblock %}

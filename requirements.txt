@@ -1,0 +1,10 @@
+flask
+pyodbc
+python-dotenv
+yfinance
+pandas
+numpy
+pytz
+openpyxl
+json
+requests
