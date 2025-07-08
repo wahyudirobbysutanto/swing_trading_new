@@ -148,6 +148,10 @@ def is_breaking_10_day_high(df):
         print(f"[is_breaking_10_day_high] ERROR: {e}")
         return False
 
+def get_high_low_context(df):
+    high10 = df['High'].rolling(window=10).max().iloc[-1]
+    low10 = df['Low'].rolling(window=10).min().iloc[-1]
+    return high10, low10
 
 
 def is_rsi_dropping(df):
