@@ -38,7 +38,8 @@ CREATE TABLE WatchlistPersonal_New (
     created_at DATETIME DEFAULT GETDATE(),
     trend_pendek VARCHAR(MAX) NULL,
     harga_vs_ema VARCHAR(MAX) NULL,
-    weekly_valid VARCHAR(MAX) NULL
+    weekly_valid VARCHAR(MAX) NULL,
+	entry_type VARCHAR(50)
 );
 
 CREATE INDEX idx_ticker_date ON WatchlistPersonal_New (ticker, tanggal);

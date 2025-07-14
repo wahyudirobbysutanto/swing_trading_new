@@ -11,7 +11,7 @@ def update_daily_price():
     tickers = get_idx_tickers_from_excel('data/Stock_List.xlsx')
 
     for ticker in tickers:
-        df = yf.download(ticker, period='250d', interval='1d')
+        df = yf.download(ticker, period='3d', interval='1d')
         df = df.reset_index()
         print(ticker.replace(".JK", ""))
 

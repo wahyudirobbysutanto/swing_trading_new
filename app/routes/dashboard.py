@@ -14,8 +14,8 @@ def dashboard():
 
     df = pd.read_sql("""
         SELECT tanggal, ticker, harga, status_rekomendasi, prioritas
-        FROM ScreeningResults
-        WHERE tanggal = (SELECT MAX(tanggal) FROM ScreeningResults)
+        FROM ScreeningResults_New
+        WHERE tanggal = (SELECT MAX(tanggal) FROM ScreeningResults_New)
     """, conn)
 
     prioritas_counts = df['prioritas'].value_counts().sort_index().to_dict()

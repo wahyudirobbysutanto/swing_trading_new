@@ -6,5 +6,5 @@ pandas
 numpy
 pytz
 openpyxl
-json
 requests
+ta
